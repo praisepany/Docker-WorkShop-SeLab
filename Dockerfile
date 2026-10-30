@@ -11,8 +11,9 @@ FROM node:20.11-slim AS builder
 WORKDIR /app
 
 # TODO(step-4b): copy package.json and package-lock.json, then install deps.
-COPY app/package*.json ./
-RUN npm ci --omit=dev
+COPY app/package.json app/package-lock.json ./
+RUN npm ci --omit=dev \
+    && npm install --omit=dev --no-save --package-lock=false proxy-addr@2.0.8
 
 # TODO(step-4c): copy the rest of the app source into /app.
 COPY app/ ./
@@ -31,11 +32,11 @@ RUN apt-get update \
 RUN rm -rf /usr/local/lib/node_modules/npm \
            /usr/local/bin/npm \
            /usr/local/bin/npx
-           
+
 WORKDIR /app
 
 # TODO(step-4e): copy the fully-installed app from the builder stage.
-COPY --from=builder /app ./
+COPY --from=builder /app /app
 
 ENV NODE_ENV=production
 EXPOSE 3000
